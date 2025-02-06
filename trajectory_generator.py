@@ -131,6 +131,26 @@ class TrajectoryGenerator(object):
 
             yield (inputs, place_outputs, pos)
 
+    def next_mine(self, vel, pos, init_pos):
+        '''
+        Returns a generator that yields batches of trajectories
+        '''
+        
+        vel = vel.transpose(0, 1)
+        vel = vel.to(self.options.device)
+
+        pos = pos.transpose(0, 1)
+        pos = pos.to(self.options.device)
+        place_outputs = self.place_cells.get_activation(pos)
+
+        init_pos = init_pos.to(self.options.device)
+        init_actv = self.place_cells.get_activation(init_pos).squeeze()
+
+        inputs = (vel, init_actv)
+
+        return (inputs, pos, place_outputs)
+
+
     def get_test_batch(self, batch_size=None, box_width=None, box_height=None):
         ''' For testing performance, returns a batch of smample trajectories'''
         if not batch_size:
@@ -157,6 +177,33 @@ class TrajectoryGenerator(object):
         init_actv = self.place_cells.get_activation(init_pos).squeeze()
 
         v = v.to(self.options.device)
+        inputs = (v, init_actv)
+
+        return (inputs, pos, place_outputs)
+    
+    def get_test_batch_mine(self, dl):
+        vel_all, pos_all, init_pos_all = [], [], []
+        for batch in dl:
+            vel, pos, init_pos = batch
+
+            vel_all.append(vel)
+            pos_all.append(pos)
+            init_pos_all.append(init_pos)
+        
+        v = torch.cat(vel_all, dim=0)
+        pos = torch.cat(pos_all, dim=0)
+        init_pos = torch.cat(init_pos_all, dim=0)
+        
+        v = v.transpose(0, 1)
+        v = v.to(self.options.device)
+
+        pos = pos.transpose(0, 1)
+        pos = pos.to(self.options.device)
+        place_outputs = self.place_cells.get_activation(pos)
+
+        init_pos = init_pos.to(self.options.device)
+        init_actv = self.place_cells.get_activation(init_pos).squeeze()
+
         inputs = (v, init_actv)
 
         return (inputs, pos, place_outputs)
