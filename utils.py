@@ -1,24 +1,26 @@
 import numpy as np
 
 
-def generate_run_ID(options):
+def generate_run_ID(options, is_riab=False):
     ''' 
     Create a unique run ID from the most relevant
     parameters. Remaining parameters can be found in 
     params.npy file. 
     '''
     params = [
-        'steps', str(options.sequence_length),
+        'box', str(options.box_width),
+        'epochs', str(options.epochs),
+        'steps', str(options.n_steps),
+        'seq', str(options.sequence_length),
         'batch', str(options.batch_size),
-        options.RNN_type,
-        str(options.Ng),
-        options.activation,
+        'g', str(options.Ng),
+        'p', str(options.Np),
         'rf', str(options.place_cell_rf),
-        'DoG', str(options.DoG),
-        'periodic', str(options.periodic),
         'lr', str(options.learning_rate),
         'weight_decay', str(options.weight_decay),
         ]
+    if is_riab:
+        params = ['riab', str(options.n_exp)] + params
     separator = '_'
     run_ID = separator.join(params)
     run_ID = run_ID.replace('.', '')

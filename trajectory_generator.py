@@ -35,7 +35,7 @@ class TrajectoryGenerator(object):
         samples = self.options.sequence_length
         dt = 0.02  # time step increment (seconds)
         sigma = 5.76 * 2  # stdev rotation velocity (rads/sec)
-        b = 0.13 * 2 * np.pi  # forward velocity rayleigh dist scale (m/sec)
+        b = self.options.velocity
         mu = 0  # turn angle bias 
         self.border_region = 0.03  # meters
 
@@ -193,6 +193,27 @@ class TrajectoryGenerator(object):
         v = torch.cat(vel_all, dim=0)
         pos = torch.cat(pos_all, dim=0)
         init_pos = torch.cat(init_pos_all, dim=0)
+        
+        v = v.transpose(0, 1)
+        v = v.to(self.options.device)
+
+        pos = pos.transpose(0, 1)
+        pos = pos.to(self.options.device)
+        place_outputs = self.place_cells.get_activation(pos)
+
+        init_pos = init_pos.to(self.options.device)
+        init_actv = self.place_cells.get_activation(init_pos).squeeze()
+
+        inputs = (v, init_actv)
+
+        return (inputs, pos, place_outputs)
+    
+    def get_single_test_batch_mine(self, dl):
+        idx_picked = np.random.randint(0, len(dl)-1)
+        for idx, batch in enumerate(dl):
+            v, pos, init_pos = batch
+            if idx == idx_picked:
+                break
         
         v = v.transpose(0, 1)
         v = v.to(self.options.device)

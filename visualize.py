@@ -67,8 +67,10 @@ def plot_ratemaps(activations, n_plots, cmap='jet', smooth=True, width=16):
     return rm_fig
 
 
-def compute_ratemaps(model, trajectory_generator, options, res=20, n_avg=None, Ng=512, idxs=None):
+def compute_ratemaps(model, trajectory_generator, options, res=20, n_avg=None, Ng=512, idxs=None, riab=False, dl=None):
     '''Compute spatial firing fields'''
+
+    batch_size = 500
 
     if not n_avg:
         n_avg = 1000 // options.sequence_length
@@ -77,14 +79,17 @@ def compute_ratemaps(model, trajectory_generator, options, res=20, n_avg=None, N
         idxs = np.arange(Ng)
     idxs = idxs[:Ng]
 
-    g = np.zeros([n_avg, options.batch_size * options.sequence_length, Ng])
-    pos = np.zeros([n_avg, options.batch_size * options.sequence_length, 2])
+    g = np.zeros([n_avg, batch_size * options.sequence_length, Ng], dtype=np.float32)
+    pos = np.zeros([n_avg, batch_size * options.sequence_length, 2], dtype=np.float32)
 
     activations = np.zeros([Ng, res, res]) 
     counts  = np.zeros([res, res])
 
     for index in range(n_avg):
-        inputs, pos_batch, _ = trajectory_generator.get_test_batch()
+        if riab:
+            inputs, pos_batch, _ = trajectory_generator.get_single_test_batch_mine(dl)
+        else:
+            inputs, pos_batch, _ = trajectory_generator.get_test_batch(batch_size=batch_size)
         g_batch = model.g(inputs).detach().cpu().numpy()
         
         pos_batch = np.reshape(pos_batch.cpu(), [-1, 2])
@@ -96,7 +101,7 @@ def compute_ratemaps(model, trajectory_generator, options, res=20, n_avg=None, N
         x_batch = (pos_batch[:,0] + options.box_width/2) / (options.box_width) * res
         y_batch = (pos_batch[:,1] + options.box_height/2) / (options.box_height) * res
 
-        for i in range(options.batch_size*options.sequence_length):
+        for i in range(batch_size*options.sequence_length):
             x = x_batch[i]
             y = y_batch[i]
             if x >=0 and x < res and y >=0 and y < res:

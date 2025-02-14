@@ -72,23 +72,19 @@ class Trainer(object):
                 self.loss.append(loss)
                 self.err.append(err)
 
-                # Log error rate to progress bar
-                # tbar.set_description('Error = ' + str(np.int(100*err)) + 'cm')
+                if step_idx%50 == 0:
+                    print('Epoch: {}/{}. Step {}/{}. Loss: {}. Err: {}cm'.format(
+                        epoch_idx, n_epochs, step_idx, n_steps,
+                        np.round(loss, 2), np.round(100 * err, 2)))
 
-                print('Epoch: {}/{}. Step {}/{}. Loss: {}. Err: {}cm'.format(
-                    epoch_idx, n_epochs, step_idx, n_steps,
-                    np.round(loss, 2), np.round(100 * err, 2)))
-
+            if (epoch_idx%10==0) and save:
+                # Save a picture of rate maps
+                save_ratemaps(self.model, self.trajectory_generator,
+                              self.options, step=epoch_idx)
             if (epoch_idx%25==0) and save:
                 # Save checkpoint
                 ckpt_path = os.path.join(self.ckpt_dir, 'epoch_{}.pth'.format(epoch_idx))
                 torch.save(self.model.state_dict(), ckpt_path)
-                torch.save(self.model.state_dict(), os.path.join(self.ckpt_dir,
-                                                                 'most_recent_model.pth'))
-
-                # Save a picture of rate maps
-                save_ratemaps(self.model, self.trajectory_generator,
-                              self.options, step=epoch_idx)
 
 
     def train_mine(self, n_epochs, dl, save=True):
@@ -101,6 +97,8 @@ class Trainer(object):
 
         # Construct generator
         dl_len = len(dl)
+        step_to_save = dl_len // 10
+        print('save every:', step_to_save)
 
         # tbar = tqdm(range(n_steps), leave=False)
         for epoch_idx in range(1, n_epochs+1):
@@ -112,20 +110,14 @@ class Trainer(object):
                 self.loss.append(loss)
                 self.err.append(err)
 
-                # Log error rate to progress bar
-                # tbar.set_description('Error = ' + str(np.int(100*err)) + 'cm')
-
-                print('Epoch: {}/{}. Batch {}/{}. Loss: {}. Err: {}cm'.format(
-                    epoch_idx, n_epochs, step_idx, dl_len,
-                    np.round(loss, 2), np.round(100 * err, 2)))
-
-            if (epoch_idx%10==0) and save:
-                # Save checkpoint
-                ckpt_path = os.path.join(self.ckpt_dir, 'epoch_{}.pth'.format(epoch_idx))
-                torch.save(self.model.state_dict(), ckpt_path)
-                torch.save(self.model.state_dict(), os.path.join(self.ckpt_dir,
-                                                                 'most_recent_model.pth'))
-
-                # Save a picture of rate maps
-                save_ratemaps(self.model, self.trajectory_generator,
-                              self.options, step=epoch_idx)
+                if step_idx%10 == 0:
+                    print('Epoch: {}/{}. Batch {}/{}. Loss: {}. Err: {}cm'.format(
+                        epoch_idx, n_epochs, step_idx, dl_len,
+                        np.round(loss, 2), np.round(100 * err, 2)))
+                if ((step_idx+1)%step_to_save==0) and save:
+                    # Save checkpoint
+                    # Save a picture of rate maps
+                    save_ratemaps(self.model, self.trajectory_generator,
+                                self.options, step=dl_len*(epoch_idx-1)+step_idx+1)
+            ckpt_path = os.path.join(self.ckpt_dir, 'epoch_{}.pth'.format(epoch_idx))
+            torch.save(self.model.state_dict(), ckpt_path)
