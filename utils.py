@@ -20,7 +20,7 @@ def generate_run_ID(options, is_riab=False):
         'weight_decay', str(options.weight_decay),
         ]
     if is_riab:
-        params = ['riab', str(options.n_exp)] + params
+        params = ['riab', str(options.behaviour), str(options.n_exp)] + params
     separator = '_'
     run_ID = separator.join(params)
     run_ID = run_ID.replace('.', '')

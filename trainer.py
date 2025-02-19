@@ -97,7 +97,7 @@ class Trainer(object):
 
         # Construct generator
         dl_len = len(dl)
-        step_to_save = dl_len // 10
+        step_to_save = dl_len // 5
         print('save every:', step_to_save)
 
         # tbar = tqdm(range(n_steps), leave=False)

@@ -43,6 +43,7 @@ def main(args):
     original_pc_ref = 0.12
     original_box_width = 2.2
 
+    options.behaviour = args.behaviour
     options.n_exp = args.n_exp
     options.epochs = args.epochs # number of epochs
     options.n_steps = args.n_steps # number of training steps
@@ -97,9 +98,9 @@ def main(args):
 
     load_dirs = [
         os.path.join(
-            DATA_DIR, 'box', 'run',
-            f"exp_dim0.635_fps50_s3600_seed{s:04d}"
-        ) for s in range(1, args.n_exp+1)
+            DATA_DIR, 'box', args.behaviour,
+            f"exp_dim0.635_fps50_s3600_seed{s:03d}"
+        ) for s in range(100, 100+args.n_exp)
     ]
 
     thetas, positions, velocities, rot_velocities =\
@@ -408,6 +409,8 @@ def main(args):
 if __name__ == '__main__':
     
     argparser = argparse.ArgumentParser()
+    argparser.add_argument('--behaviour', type=str, default=None, help="Behaviour from which to load data")
+
     argparser.add_argument('--n_exp', type=int, default=1_000, help="Number of experiments to load") # was 100_000
     argparser.add_argument('--epochs', type=int, default=100, help="Number of epochs") # was 100_000
     argparser.add_argument('--n_steps', type=int, default=100, help="Number of training steps") # was 100_000
