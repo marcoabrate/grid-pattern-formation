@@ -87,7 +87,7 @@ class Trainer(object):
                 torch.save(self.model.state_dict(), ckpt_path)
 
 
-    def train_mine(self, n_epochs, dl, save=True):
+    def train_mine(self, n_epochs, dl_train, dl_test, save=True):
         ''' 
         Train model on simulated trajectories.
 
@@ -96,13 +96,13 @@ class Trainer(object):
         '''
 
         # Construct generator
-        dl_len = len(dl)
+        dl_len = len(dl_train)
         step_to_save = dl_len // 5
         print('save every:', step_to_save)
 
         # tbar = tqdm(range(n_steps), leave=False)
         for epoch_idx in range(1, n_epochs+1):
-            for step_idx, batch in enumerate(dl):
+            for step_idx, batch in enumerate(dl_train):
                 vel, pos, init_pos = batch
                 (inputs, pos, pc_outputs) = self.trajectory_generator.next_mine(vel, pos, init_pos)
 
@@ -120,8 +120,11 @@ class Trainer(object):
                 #                 self.options, step=dl_len*(epoch_idx-1)+step_idx+1)
             if (epoch_idx%25==0) and save:
                 # Save a picture of rate maps
-                save_ratemaps(self.model, self.trajectory_generator,
-                            self.options, step=dl_len*(epoch_idx-1)+step_idx+1)
+                save_ratemaps(
+                    self.model, self.trajectory_generator,
+                    self.options, step=dl_len*(epoch_idx-1)+step_idx+1,
+                    dl_test=dl_test
+                )
             if (epoch_idx%50==0) and save:
                 # Save checkpoint
                 ckpt_path = os.path.join(self.ckpt_dir, 'epoch_{}.pth'.format(epoch_idx))

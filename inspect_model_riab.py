@@ -85,7 +85,7 @@ def main(args):
     options.run_ID = generate_run_ID(options, is_riab=True)
 
     print("original total number of datapoints")
-    print(f"{100_000 * 200 * options.sequence_length * 1_000:,f}") # where 1_000 is the number of epochs
+    print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
 
     # If you've trained with these params before, will restore trained model
     place_cells = PlaceCells(options)
@@ -230,7 +230,7 @@ def main(args):
     print()
 
     print("current total number of datapoints (w/ similar results)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,f}") # where 100 is the number of epochs
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,.0f}") # where 100 is the number of epochs
     print()
     for i, batch in enumerate(dataloader_train):
         if i == 0:
@@ -245,7 +245,7 @@ def main(args):
             break
         
     print("total number of datapoints (w/ rat in a box)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,f}")
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,.0f}")
     print()
 
     dataloader_test = torch.utils.data.DataLoader(
@@ -288,7 +288,7 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'place_cells.png'))
     plt.close()
 
-    trainer.train_mine(n_epochs=args.epochs, dl=dataloader_train, save=True)
+    trainer.train_mine(n_epochs=args.epochs, dl_train=dataloader_train, dl_test=dataloader_test, save=True)
 
     print('done training')
     torch.cuda.empty_cache()
