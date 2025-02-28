@@ -39,8 +39,8 @@
 
 ########### check if RIAB with few examples works
 
-for c in cluster3 cluster0 cluster1 cluster2; do
-    # g = 6144
-    python inspect_model_riab.py --behaviour $c --n_exp 15 --epochs 120 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/$c.6144.txt 2>&1;
-done
+# for c in cluster3 cluster0 cluster1 cluster2; do
+#     # g = 6144
+#     python inspect_model_riab.py --behaviour $c --n_exp 15 --epochs 120 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/$c.6144.txt 2>&1;
+# done
 

@@ -21,7 +21,7 @@ class PlaceCells(object):
         np.random.seed(0)
         usx = np.random.uniform(-self.box_width/2, self.box_width/2, (self.Np,))
         usy = np.random.uniform(-self.box_width/2, self.box_width/2, (self.Np,))
-        self.us = torch.tensor(np.vstack([usx, usy]).T)
+        self.us = torch.tensor(np.vstack([usx, usy]).T, dtype=torch.float32)
         # If using a GPU, put on GPU
         self.us = self.us.to(self.device)
         # self.us = torch.tensor(np.load('models/example_pc_centers.npy')).cuda()

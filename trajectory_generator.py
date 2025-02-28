@@ -136,6 +136,7 @@ class TrajectoryGenerator(object):
         Returns a generator that yields batches of trajectories
         '''
 
+        image = image.transpose(0, 1)
         image = image.to(self.options.device)
         
         vel = vel.transpose(0, 1)
@@ -198,6 +199,7 @@ class TrajectoryGenerator(object):
         pos = torch.cat(pos_all, dim=0)
         init_pos = torch.cat(init_pos_all, dim=0)
         
+        im = im.transpose(0, 1)
         im = im.to(self.options.device)
 
         v = v.transpose(0, 1)
@@ -217,10 +219,12 @@ class TrajectoryGenerator(object):
     def get_single_test_batch_mine(self, dl):
         idx_picked = np.random.randint(0, len(dl)-1)
         for idx, batch in enumerate(dl):
-            v, pos, init_pos = batch
+            im, v, pos, init_pos = batch
             if idx == idx_picked:
                 break
-        
+        im = im.transpose(0, 1)
+        im = im.to(self.options.device)
+
         v = v.transpose(0, 1)
         v = v.to(self.options.device)
 
@@ -231,6 +235,6 @@ class TrajectoryGenerator(object):
         init_pos = init_pos.to(self.options.device)
         init_actv = self.place_cells.get_activation(init_pos).squeeze()
 
-        inputs = (v, init_actv)
+        inputs = (im, v, init_actv)
 
         return (inputs, pos, place_outputs)

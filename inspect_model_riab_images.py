@@ -106,7 +106,8 @@ def main(args):
     options.run_ID = generate_run_ID(options, is_riab=True, is_video=True)
 
     print("original total number of datapoints")
-    print(f"{100_000 * 200 * options.sequence_length * 1_000:,f}") # where 1_000 is the number of epochs
+    print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
+    print()
 
     # If you've trained with these params before, will restore trained model
     place_cells = PlaceCells(options)
@@ -217,7 +218,7 @@ def main(args):
     print()
 
     print("current total number of datapoints (w/ similar results)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,f}") # where 100 is the number of epochs
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,.0f}") # where 100 is the number of epochs
     print()
     for i, batch in enumerate(dataloader_train):
         if i == 0:
@@ -233,18 +234,20 @@ def main(args):
             break
         
     print("total number of datapoints (w/ rat in a box)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,f}")
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,.0f}")
     print()
+
+    batch_size_test = 500
 
     dataloader_test = torch.utils.data.DataLoader(
         WindowedPredictionDataset(
-            vid[-1:, :((vel.shape[1]//500)-1)*500],
-            vel[-1:, :((vel.shape[1]//500)-1)*500],
-            rot_vel[-1:, :((vel.shape[1]//500)-1)*500],
-            pos[-1:, :((vel.shape[1]//500)-1)*500],
+            vid[-1:, :((vel.shape[1]//batch_size_test)-1)*batch_size_test],
+            vel[-1:, :((vel.shape[1]//batch_size_test)-1)*batch_size_test],
+            rot_vel[-1:, :((vel.shape[1]//batch_size_test)-1)*batch_size_test],
+            pos[-1:, :((vel.shape[1]//batch_size_test)-1)*batch_size_test],
             window_size=options.sequence_length
         ),
-        shuffle=True, batch_size=500
+        shuffle=True, batch_size=batch_size_test
     )
 
 
@@ -277,7 +280,7 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'place_cells.png'))
     plt.close()
 
-    trainer.train_mine(n_epochs=args.epochs, dl=dataloader_train, save=True)
+    trainer.train_mine(n_epochs=args.epochs, dl_train=dataloader_train, dl_test=dataloader_test, save=True)
 
     print('done training')
     torch.cuda.empty_cache()
@@ -400,10 +403,10 @@ if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--behaviour', type=str, default='cluster3', help="Behaviour from which to load data")
 
-    argparser.add_argument('--n_exp', type=int, default=3, help="Number of experiments to load") # was 100_000
+    argparser.add_argument('--n_exp', type=int, default=15, help="Number of experiments to load") # was 100_000
     argparser.add_argument('--epochs', type=int, default=150, help="Number of epochs") # was 100_000
     argparser.add_argument('--n_steps', type=int, default=0, help="Number of training steps") # was 100_000
-    argparser.add_argument('--batch_size', type=int, default=1_000, help="Number of trajectories per batch") # was 200
+    argparser.add_argument('--batch_size', type=int, default=3_000, help="Number of trajectories per batch") # was 200
 
     argparser.add_argument('--override_pc_ref', type=float, default=None, help="Width of place cell center tuning curve (m)")
     argparser.add_argument('--original_velocity', action=argparse.BooleanOptionalAction)
