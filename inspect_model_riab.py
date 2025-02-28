@@ -387,7 +387,7 @@ def main(args):
 
     scores = []
     for idx, rm in enumerate(rate_map_lores):
-        print(f"Computing scores for trajectory {idx}/{rate_map_lores.shape[0]}")
+        if idx % 500 == 0 : print(f"Computing scores for trajectory {idx}/{rate_map_lores.shape[0]}")
         
         scores.append(
             scorer.get_scores(rm.reshape(lo_res, lo_res))

@@ -18,7 +18,7 @@ class PlaceCells(object):
         self.softmax = torch.nn.Softmax(dim=-1)
         
         # Randomly tile place cell centers across environment
-        np.random.seed(0)
+        # np.random.seed(0)
         usx = np.random.uniform(-self.box_width/2, self.box_width/2, (self.Np,))
         usy = np.random.uniform(-self.box_width/2, self.box_width/2, (self.Np,))
         self.us = torch.tensor(np.vstack([usx, usy]).T)

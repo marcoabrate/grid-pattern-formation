@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def generate_run_ID(options, is_riab=False):
+def generate_run_ID(options, is_riab=False, is_video=False):
     ''' 
     Create a unique run ID from the most relevant
     parameters. Remaining parameters can be found in 
@@ -21,6 +21,8 @@ def generate_run_ID(options, is_riab=False):
         ]
     if is_riab:
         params = ['riab', str(options.behaviour), str(options.n_exp)] + params
+        if is_video:
+            params = ['video'] + params
     separator = '_'
     run_ID = separator.join(params)
     run_ID = run_ID.replace('.', '')

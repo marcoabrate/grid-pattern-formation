@@ -33,8 +33,14 @@
 
 # python inspect_model_riab.py --behaviour cluster2 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/7.txt 2>&1;
 # python inspect_model_riab.py --behaviour cluster1 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/8.txt 2>&1;
-python inspect_model_riab.py --behaviour cluster0 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/9.txt 2>&1;
+# python inspect_model_riab.py --behaviour cluster0 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/9.txt 2>&1;
 
-python inspect_model_riab.py --behaviour cluster3 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/6.txt 2>&1;
+# python inspect_model_riab.py --behaviour cluster3 --n_exp 300 --epochs 5 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/6.txt 2>&1;
 
+########### check if RIAB with few examples works
+
+for c in cluster3 cluster0 cluster1 cluster2; do
+    # g = 6144
+    python inspect_model_riab.py --behaviour $c --n_exp 15 --epochs 120 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/$c.6144.txt 2>&1;
+done
 
