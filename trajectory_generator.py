@@ -131,10 +131,12 @@ class TrajectoryGenerator(object):
 
             yield (inputs, place_outputs, pos)
 
-    def next_mine(self, vel, pos, init_pos):
+    def next_mine(self, image, vel, pos, init_pos):
         '''
         Returns a generator that yields batches of trajectories
         '''
+
+        image = image.to(self.options.device)
         
         vel = vel.transpose(0, 1)
         vel = vel.to(self.options.device)
@@ -146,7 +148,7 @@ class TrajectoryGenerator(object):
         init_pos = init_pos.to(self.options.device)
         init_actv = self.place_cells.get_activation(init_pos).squeeze()
 
-        inputs = (vel, init_actv)
+        inputs = (image, vel, init_actv)
 
         return (inputs, pos, place_outputs)
 
@@ -182,18 +184,22 @@ class TrajectoryGenerator(object):
         return (inputs, pos, place_outputs)
     
     def get_test_batch_mine(self, dl):
-        vel_all, pos_all, init_pos_all = [], [], []
+        image_all, vel_all, pos_all, init_pos_all = [], [], [], []
         for batch in dl:
-            vel, pos, init_pos = batch
+            image, vel, pos, init_pos = batch
 
+            image_all.append(image)
             vel_all.append(vel)
             pos_all.append(pos)
             init_pos_all.append(init_pos)
         
+        im = torch.cat(image_all, dim=0)
         v = torch.cat(vel_all, dim=0)
         pos = torch.cat(pos_all, dim=0)
         init_pos = torch.cat(init_pos_all, dim=0)
         
+        im = im.to(self.options.device)
+
         v = v.transpose(0, 1)
         v = v.to(self.options.device)
 
@@ -204,7 +210,7 @@ class TrajectoryGenerator(object):
         init_pos = init_pos.to(self.options.device)
         init_actv = self.place_cells.get_activation(init_pos).squeeze()
 
-        inputs = (v, init_actv)
+        inputs = (im, v, init_actv)
 
         return (inputs, pos, place_outputs)
     

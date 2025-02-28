@@ -103,8 +103,8 @@ class Trainer(object):
         # tbar = tqdm(range(n_steps), leave=False)
         for epoch_idx in range(1, n_epochs+1):
             for step_idx, batch in enumerate(dl):
-                vel, pos, init_pos = batch
-                (inputs, pos, pc_outputs) = self.trajectory_generator.next_mine(vel, pos, init_pos)
+                image, vel, pos, init_pos = batch
+                (inputs, pos, pc_outputs) = self.trajectory_generator.next_mine(image, vel, pos, init_pos)
 
                 loss, err = self.train_step(inputs, pc_outputs, pos)
                 self.loss.append(loss)

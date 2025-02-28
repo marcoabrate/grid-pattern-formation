@@ -11,8 +11,9 @@ class RNN(torch.nn.Module):
         self.place_cells = place_cells
 
         # Input weights
-        self.encoder = torch.nn.Linear(self.Np, self.Ng, bias=False)
-        self.RNN = torch.nn.RNN(input_size=2,
+        self.encoder_pc = torch.nn.Linear(self.Np, self.Ng, bias=False)
+        # self.encoder_image = torch.nn.Linear(512, self.Ng, bias=False)
+        self.RNN = torch.nn.RNN(input_size=512+2,
                                 hidden_size=self.Ng,
                                 nonlinearity=options.activation,
                                 bias=False)
@@ -30,9 +31,13 @@ class RNN(torch.nn.Module):
         Returns: 
             g: Batch of grid cell activations with shape [batch_size, sequence_length, Ng].
         '''
-        v, p0 = inputs
-        init_state = self.encoder(p0)[None]
-        g,_ = self.RNN(v, init_state)
+        image, vel, init_actv = inputs
+        init_state = self.encoder_pc(init_actv)[None]
+
+        g,_ = self.RNN(
+            torch.cat([image, vel], dim=-1),
+            init_state
+        )
         return g
     
 

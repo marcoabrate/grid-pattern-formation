@@ -181,7 +181,7 @@ def main(args):
             exp = index // self.windows_in_exp
             index_in_exp = index % self.windows_in_exp
 
-            vid = self.video[exp]
+            image = self.video[exp]
             vel = self.velocity[exp]
             # rot_vel = self.rot_velocity[exp]
             pos = self.positions[exp]
@@ -192,12 +192,12 @@ def main(args):
             #     rot_vel[window_slice[0]:window_slice[1], ...]],
             #     axis=-1
             # )
-            vid = vid[window_slice[0]:window_slice[1], ...]
+            image = image[window_slice[0]:window_slice[1], ...]
             vel = vel[window_slice[0]:window_slice[1], ...]
             init_pos = pos[window_slice[0], ...][None, ...]
             pos = pos[window_slice[0]+1:window_slice[1]+1, ...]
 
-            return vid, vel, pos, init_pos
+            return image, vel, pos, init_pos
 
         def __len__(self):
             return self.n_exp * self.windows_in_exp
@@ -221,9 +221,10 @@ def main(args):
     print()
     for i, batch in enumerate(dataloader_train):
         if i == 0:
-            v, p, ip = batch
+            im, v, p, ip = batch
 
             print(f"\tBATCH {i}")
+            print('\t', im.shape, im.dtype)
             print('\t', v.shape, v.dtype)
             print('\t', p.shape, p.dtype)
             print('\t', ip.shape, ip.dtype)
