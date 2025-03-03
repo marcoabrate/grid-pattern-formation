@@ -45,6 +45,4 @@
 # done
 
 # python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy --n_exp 15 --epochs 125 > experiments/logs/1.txt 2>&1;
-python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/2.txt 2>&1;
-
-python inspect_model_riab_images.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/3.txt 2>&1;
+# python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/2.txt 2>&1;

@@ -30,7 +30,7 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"]="expandable_segments:True"
 from utils import generate_run_ID
 from place_cells import PlaceCells
 from trajectory_generator import TrajectoryGenerator
-from model_dualin import RNN
+from model_image2hidden import RNN
 from trainer import Trainer
 import argparse
 import cv2
@@ -75,6 +75,7 @@ def main(args):
     options.box_width = args.box_width # width of training environment
     options.box_height = options.box_width # height of training environment
     options.learning_rate = args.learning_rate # gradient descent learning rate
+    options.image_loss_weight = 1e-2 # weight of image loss
     options.weight_decay = args.weight_decay # strength of weight decay on recurrent weights
 
     options.save_dir = 'experiments'
@@ -298,9 +299,15 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'training_curves.png'))
     plt.close()
 
+
+    # ckpt_path = "experiments/riab_500_box_0635_epochs_2_steps_0_seq_20_batch_5000_g_1024_p_512_rf_003463636363636363_lr_00001_weight_decay_00001/epoch_2.pth"
+    # model.load_state_dict(torch.load(ckpt_path))
+    # model.eval()
+
     inputs, pos, pc_outputs = trajectory_generator.get_single_test_batch_mine(dataloader_test)
     pos = pos.cpu()
-    pred_pos = place_cells.get_nearest_cell_pos(model.predict(inputs)).cpu()
+    place_preds, image_preds = model.predict(inputs)
+    pred_pos = place_cells.get_nearest_cell_pos(place_preds).cpu()
     us = place_cells.us.cpu()
 
     fig = plt.figure(figsize=(5,5))
@@ -323,10 +330,10 @@ def main(args):
 
     # Visualize predicted place cell outputs
     inputs, pos, pc_outputs = trajectory_generator.get_single_test_batch_mine(dataloader_test)
-    preds = model.predict(inputs)
-    preds = preds.reshape(-1, options.Np).detach().cpu()
+    place_preds, image_preds = model.predict(inputs)
+    place_preds = place_preds.reshape(-1, options.Np).detach().cpu()
     pc_outputs = model.softmax(pc_outputs).reshape(-1, options.Np).cpu()
-    pc_pred = place_cells.grid_pc(preds[:100])
+    pc_pred = place_cells.grid_pc(place_preds[:100])
     pc = place_cells.grid_pc(pc_outputs[:100])
 
     plt.figure(figsize=(16,4))
@@ -348,9 +355,25 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'decoded_pc.png'))
     plt.close()
 
-    # ckpt_path = "experiments/riab_500_box_0635_epochs_2_steps_0_seq_20_batch_5000_g_1024_p_512_rf_003463636363636363_lr_00001_weight_decay_00001/epoch_2.pth"
-    # model.load_state_dict(torch.load(ckpt_path))
-    # model.eval()
+    image = inputs[0][1:, ...]
+    for batch in np.random.choice(range(batch_size_test), size=5, replace=False):
+        fig, axs = plt.subplots(20, 2, figsize=(10, 50))
+        axs[0, 0].set_title('True image')
+        axs[0, 1].set_title('Predicted image')
+        for i in range(20):
+            axs[i, 0].imshow(
+                image[i, batch].reshape(args.frame_dim[1]//4, args.frame_dim[0]//4).detach().cpu().numpy(),
+                cmap='gray'
+            )
+            axs[i, 1].imshow(
+                image_preds[i, batch].reshape(args.frame_dim[1]//4, args.frame_dim[0]//4).detach().cpu().numpy(),
+                cmap='gray'
+            )
+            axs[i, 0].axis('off')
+            axs[i, 1].axis('off')
+        plt.tight_layout()
+        plt.savefig(os.path.join(trainer.ckpt_dir, f'predicted_images_{batch}.png'))
+        plt.close()
 
     # grid scores calculation
     print('grid scores calculation')    
@@ -403,10 +426,10 @@ if __name__ == '__main__':
     
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--behaviour', type=str, default='cluster3', help="Behaviour from which to load data")
-    argparser.add_argument('--env', type=str, required=True, help="Environment from which to load data. 'box_messy' or 'box_messy_grass'")
+    argparser.add_argument('--env', type=str, default='box_messy_grass') #required=True, help="Environment from which to load data. 'box_messy' or 'box_messy_grass'")
 
     argparser.add_argument('--n_exp', type=int, default=15, help="Number of experiments to load") # was 100_000
-    argparser.add_argument('--epochs', type=int, default=125, help="Number of epochs") # was 100_000
+    argparser.add_argument('--epochs', type=int, default=100, help="Number of epochs") # was 100_000
     argparser.add_argument('--n_steps', type=int, default=0, help="Number of training steps") # was 100_000
     argparser.add_argument('--batch_size', type=int, default=3_000, help="Number of trajectories per batch") # was 200
 

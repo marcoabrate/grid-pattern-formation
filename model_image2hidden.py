@@ -21,6 +21,7 @@ class RNN(torch.nn.Module):
         self.Ng = options.Ng
         self.Np = options.Np
         self.sequence_length = options.sequence_length
+        self.image_loss_weight = options.image_loss_weight
         self.weight_decay = options.weight_decay
         self.place_cells = place_cells
         self.device = options.device
@@ -36,8 +37,9 @@ class RNN(torch.nn.Module):
         self.decoder_image = torch.nn.Linear(self.Ng, 512, bias=False)
         
         self.softmax = torch.nn.Softmax(dim=-1)
+        self.sigmoid = torch.nn.Sigmoid()
 
-        self.loss_fn_image = torch.nn.CrossEntropyLoss()
+        self.loss_fn_image = torch.nn.L1Loss(reduction='none')
 
     def g(self, inputs):
         '''
@@ -50,9 +52,9 @@ class RNN(torch.nn.Module):
         '''
         image, vel, init_actv = inputs
         init_state = (
-            self.encoder_pc(init_actv)[None] +
-            self.encoder_image(image[0, ...])[None]
-        )
+            self.encoder_pc(init_actv) +
+            self.encoder_image(image[0, ...])
+        )[None]
 
         output = torch.zeros(vel.shape[0], vel.shape[1], self.Ng).to(self.device)
 
@@ -78,8 +80,12 @@ class RNN(torch.nn.Module):
             place_preds: Predicted place cell activations with shape 
                 [sequence_length, batch_size, Np].
         '''
-        place_preds = self.decoder_pc(self.g(inputs))
-        image_preds = self.decoder_image(self.g(inputs))
+        g = self.g(inputs)
+
+        place_preds = self.decoder_pc(g)
+        image_preds = self.sigmoid(
+            self.decoder_image(g)
+        )
         
         return place_preds, image_preds
 
@@ -101,11 +107,12 @@ class RNN(torch.nn.Module):
         y = pc_outputs
 
         place_preds, image_preds = self.predict(inputs)
-        yhat = self.softmax(place_preds) # TODO: check if .copy() is needed
+        yhat = self.softmax(place_preds)
 
-        loss = self.loss_fn_image(image_preds, image[1:, ...])
-        # TODO: or MAE between self.sigmoid(image_preds) and image[1:, ...]?
+        # image prediction loss
+        loss = self.image_loss_weight * self.loss_fn_image(image_preds, image[1:, ...]).sum(-1).mean()
         
+        # place cells prediction loss
         loss -= (y*torch.log(yhat)).sum(-1).mean()
 
         # Weight regularization 
