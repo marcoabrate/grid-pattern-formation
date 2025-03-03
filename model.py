@@ -12,7 +12,7 @@ class RNN(torch.nn.Module):
 
         # Input weights
         self.encoder_pc = torch.nn.Linear(self.Np, self.Ng, bias=False)
-        # self.encoder_image = torch.nn.Linear(512, self.Ng, bias=False)
+        
         self.RNN = torch.nn.RNN(input_size=512+2,
                                 hidden_size=self.Ng,
                                 nonlinearity=options.activation,

@@ -44,3 +44,7 @@
 #     python inspect_model_riab.py --behaviour $c --n_exp 15 --epochs 120 --n_steps 0 --batch_size 4000 --Np 512 --Ng 6144 --box_width 0.635 > experiments/logs/$c.6144.txt 2>&1;
 # done
 
+# python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy --n_exp 15 --epochs 125 > experiments/logs/1.txt 2>&1;
+python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/2.txt 2>&1;
+
+python inspect_model_riab_images.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/3.txt 2>&1;

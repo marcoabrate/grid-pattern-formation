@@ -30,7 +30,7 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"]="expandable_segments:True"
 from utils import generate_run_ID
 from place_cells import PlaceCells
 from trajectory_generator import TrajectoryGenerator
-from model import RNN
+from model_dualin import RNN
 from trainer import Trainer
 import argparse
 import cv2
@@ -104,7 +104,7 @@ def main(args):
     # additional options which were not given, but necessary
     options.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    options.run_ID = generate_run_ID(options, is_riab=True, is_video=True)
+    options.run_ID = generate_run_ID(options, is_riab=True, is_video=True, dualin=True)
 
     print("original total number of datapoints")
     print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
@@ -281,7 +281,7 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'place_cells.png'))
     plt.close()
 
-    trainer.train_mine(n_epochs=args.epochs, dl_train=dataloader_train, dl_test=dataloader_test, save=True)
+    # trainer.train_mine(n_epochs=args.epochs, dl_train=dataloader_train, dl_test=dataloader_test, save=True)
 
     print('done training')
     torch.cuda.empty_cache()
@@ -418,8 +418,8 @@ if __name__ == '__main__':
 
     argparser.add_argument('--box_width', type=float, default=0.635, help="Width of training environment")
 
-    argparser.add_argument('--learning_rate', type=float, default=1e-4, help="Gradient descent learning rate")
-    argparser.add_argument('--weight_decay', type=float, default=1e-4, help="Strength of weight decay on recurrent weights")
+    argparser.add_argument('--learning_rate', type=float, default=1e-5, help="Gradient descent learning rate")
+    argparser.add_argument('--weight_decay', type=float, default=1e-5, help="Strength of weight decay on recurrent weights")
 
     args = argparser.parse_args()
 

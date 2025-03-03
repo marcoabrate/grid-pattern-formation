@@ -5,17 +5,15 @@ class RNNCell(torch.nn.Module):
     def __init__(self, Ng):
         super(RNNCell, self).__init__()
 
-        self.image2hidden = torch.nn.Linear(512, Ng, bias=False)
         self.vel2hidden = torch.nn.Linear(2, Ng, bias=False)
         self.hidden2hidden = torch.nn.Linear(Ng, Ng, bias=False)
 
         self.relu = torch.nn.ReLU()
 
-    def forward(self, image, vel, hidden):
-        image_enc = self.image2hidden(image)
+    def forward(self, vel, hidden):
         vel_enc = self.vel2hidden(vel)
         hidden_enc = self.hidden2hidden(hidden)
-        return self.relu(image_enc + vel_enc + hidden_enc)
+        return self.relu(vel_enc + hidden_enc)
 
 class RNN(torch.nn.Module):
     def __init__(self, options, place_cells):
@@ -29,13 +27,17 @@ class RNN(torch.nn.Module):
 
         # Input weights
         self.encoder_pc = torch.nn.Linear(self.Np, self.Ng, bias=False)
+        self.encoder_image = torch.nn.Linear(512, self.Ng, bias=False)
         
         self.rnn_cell = RNNCell(self.Ng)
 
         # Linear read-out weights
-        self.decoder = torch.nn.Linear(self.Ng, self.Np, bias=False)
+        self.decoder_pc = torch.nn.Linear(self.Ng, self.Np, bias=False)
+        self.decoder_image = torch.nn.Linear(self.Ng, 512, bias=False)
         
         self.softmax = torch.nn.Softmax(dim=-1)
+
+        self.loss_fn_image = torch.nn.CrossEntropyLoss()
 
     def g(self, inputs):
         '''
@@ -47,18 +49,20 @@ class RNN(torch.nn.Module):
             g: Batch of grid cell activations with shape [sequence_length, batch_size, Ng].
         '''
         image, vel, init_actv = inputs
-        init_state = self.encoder_pc(init_actv)[None]
+        init_state = (
+            self.encoder_pc(init_actv)[None] +
+            self.encoder_image(image[0, ...])[None]
+        )
 
-        output = torch.zeros(image.shape[0], image.shape[1], self.Ng).to(self.device)
+        output = torch.zeros(vel.shape[0], vel.shape[1], self.Ng).to(self.device)
 
-        sequence_length = image.shape[0]
+        sequence_length = vel.shape[0]
 
         # loop over time
         h_out = init_state
         for t in range(sequence_length):
-            image_t = image[t,...]
             vel_t = vel[t,...]
-            h_out = self.rnn_cell(image_t, vel_t, h_out)
+            h_out = self.rnn_cell(vel_t, h_out)
             output[t,...] = h_out
 
         return output
@@ -74,9 +78,10 @@ class RNN(torch.nn.Module):
             place_preds: Predicted place cell activations with shape 
                 [sequence_length, batch_size, Np].
         '''
-        place_preds = self.decoder(self.g(inputs))
+        place_preds = self.decoder_pc(self.g(inputs))
+        image_preds = self.decoder_image(self.g(inputs))
         
-        return place_preds
+        return place_preds, image_preds
 
 
     def compute_loss(self, inputs, pc_outputs, pos):
@@ -92,16 +97,22 @@ class RNN(torch.nn.Module):
             loss: Avg. loss for this training batch.
             err: Avg. decoded position error in cm.
         '''
+        image = inputs[0]
         y = pc_outputs
-        preds = self.predict(inputs)
-        yhat = self.softmax(self.predict(inputs))
-        loss = -(y*torch.log(yhat)).sum(-1).mean()
+
+        place_preds, image_preds = self.predict(inputs)
+        yhat = self.softmax(place_preds) # TODO: check if .copy() is needed
+
+        loss = self.loss_fn_image(image_preds, image[1:, ...])
+        # TODO: or MAE between self.sigmoid(image_preds) and image[1:, ...]?
+        
+        loss -= (y*torch.log(yhat)).sum(-1).mean()
 
         # Weight regularization 
         loss += self.weight_decay * (self.rnn_cell.hidden2hidden.weight**2).sum()
 
         # Compute decoding error
-        pred_pos = self.place_cells.get_nearest_cell_pos(preds)
+        pred_pos = self.place_cells.get_nearest_cell_pos(place_preds)
         err = torch.sqrt(((pos - pred_pos)**2).sum(-1)).mean()
 
         return loss, err

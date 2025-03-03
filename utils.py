@@ -1,13 +1,14 @@
 import numpy as np
 
 
-def generate_run_ID(options, is_riab=False, is_video=False):
+def generate_run_ID(options, is_riab=False, is_video=False, image2hidden=False, dualin=False):
     ''' 
     Create a unique run ID from the most relevant
     parameters. Remaining parameters can be found in 
     params.npy file. 
     '''
     params = [
+        str(options.env),
         'box', str(options.box_width),
         'epochs', str(options.epochs),
         'steps', str(options.n_steps),
@@ -23,6 +24,10 @@ def generate_run_ID(options, is_riab=False, is_video=False):
         params = ['riab', str(options.behaviour), str(options.n_exp)] + params
         if is_video:
             params = ['video'] + params
+            if dualin:
+                params = ['dualin'] + params
+            if image2hidden:
+                params = ['image2hidden'] + params
     separator = '_'
     run_ID = separator.join(params)
     run_ID = run_ID.replace('.', '')

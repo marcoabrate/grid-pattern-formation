@@ -2,7 +2,7 @@
 import torch
 import numpy as np
 
-from visualize import save_ratemaps_mine
+from visualize import save_ratemaps_mine, save_ratemaps
 import os
 
 
@@ -97,8 +97,6 @@ class Trainer(object):
 
         # Construct generator
         dl_len = len(dl_train)
-        step_to_save = dl_len // 5
-        print('save every:', step_to_save)
 
         # tbar = tqdm(range(n_steps), leave=False)
         for epoch_idx in range(1, n_epochs+1):
@@ -114,12 +112,7 @@ class Trainer(object):
                     print('Epoch: {}/{}. Batch {}/{}. Loss: {}. Err: {}cm'.format(
                         epoch_idx, n_epochs, step_idx, dl_len,
                         np.round(loss, 2), np.round(100 * err, 2)))
-                # if ((step_idx+1)%step_to_save==0) and save:
-                #     # Save a picture of rate maps
-                #     save_ratemaps(self.model, self.trajectory_generator,
-                #                 self.options, step=dl_len*(epoch_idx-1)+step_idx+1)
-            # if (epoch_idx%25==0) and save:
-            if True:
+            if (epoch_idx%15==0) and save:
                 print('Saving rate maps snapshot')
                 save_ratemaps_mine(
                     self.model, self.trajectory_generator,
