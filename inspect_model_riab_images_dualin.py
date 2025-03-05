@@ -104,7 +104,7 @@ def main(args):
     # additional options which were not given, but necessary
     options.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    options.run_ID = generate_run_ID(options, is_riab=True, is_video=True, dualin=True)
+    options.run_ID = generate_run_ID(options, is_riab=True, prefix='dualin_video')
 
     print("original total number of datapoints")
     print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
@@ -130,24 +130,29 @@ def main(args):
         [], [], [], [], []
     args.frame_dim = [128, 64]
     print("\n[*] Loading simulations from:")
-    for i, ld in enumerate(load_dirs):
-        print(ld)
-        # load riab data
-        video_lq = read_video_files_lq(
-            os.path.join(ld, options.env), [args.frame_dim[0]//4, args.frame_dim[1]//4]
-        )
-        videos.append(video_lq.reshape(video_lq.shape[0], -1))
-        
-        thetas.append(np.expand_dims(
-            np.load(os.path.join(ld, "riab_simulation/thetas.npy")).astype(np.float32),
-            axis=-1
-        ))
-        positions.append(np.load(os.path.join(ld, "riab_simulation/positions.npy")).astype(np.float32))
-        velocities.append(np.load(os.path.join(ld, "riab_simulation/velocities.npy")).astype(np.float32))
-        rot_velocities.append(np.expand_dims(
-            np.load(os.path.join(ld, "riab_simulation/rot_velocities.npy")).astype(np.float32),
-            axis=-1
-        ))
+    if options.env == 'all':
+        envs = ['box_messy', 'box_messy_grass']
+    else:
+        envs = [options.env]
+    for env in envs:
+        for i, ld in enumerate(load_dirs):
+            print(ld)
+            # load riab data
+            video_lq = read_video_files_lq(
+                os.path.join(ld, env), [args.frame_dim[0]//4, args.frame_dim[1]//4]
+            )
+            videos.append(video_lq.reshape(video_lq.shape[0], -1))
+            
+            thetas.append(np.expand_dims(
+                np.load(os.path.join(ld, "riab_simulation/thetas.npy")).astype(np.float32),
+                axis=-1
+            ))
+            positions.append(np.load(os.path.join(ld, "riab_simulation/positions.npy")).astype(np.float32))
+            velocities.append(np.load(os.path.join(ld, "riab_simulation/velocities.npy")).astype(np.float32))
+            rot_velocities.append(np.expand_dims(
+                np.load(os.path.join(ld, "riab_simulation/rot_velocities.npy")).astype(np.float32),
+                axis=-1
+            ))
 
     vid = np.stack(videos, axis=0)
     vel = np.stack(velocities, axis=0)

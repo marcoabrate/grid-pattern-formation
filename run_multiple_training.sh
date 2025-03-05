@@ -46,3 +46,21 @@
 
 # python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy --n_exp 15 --epochs 125 > experiments/logs/1.txt 2>&1;
 # python inspect_model_riab_images_dualin.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 100 > experiments/logs/2.txt 2>&1;
+
+
+########### IMAGES
+
+python inspect_model_riab_images_dualin.py --behaviour cluster3 --env all --n_exp 15 --epoch 100 > /home/marco/logs/1.txt 2>&1;
+
+# image loss weight at 1e-3
+python inspect_model_riab_image2hidden.py --behaviour cluster3 --env all --n_exp 15 --epochs 50 --image_loss_weight 1e-3 > /home/marco/logs/2.txt 2>&1;
+python inspect_model_riab_image2hidden.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 30 --image_loss_weight 1e-3 > /home/marco/logs/3.txt 2>&1;
+python inspect_model_riab_imagepred.py --behaviour cluster3 --env all --n_exp 15 --epochs 50 --image_loss_weight 1e-3 > /home/marco/logs/4.txt 2>&1;
+python inspect_model_riab_imagepred.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 50 --image_loss_weight 1e-3 > /home/marco/logs/5.txt 2>&1;
+
+# image loss weight at 1e-2
+python inspect_model_riab_imagepred.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 50 --image_loss_weight 1e-2 > /home/marco/logs/6.txt 2>&1;
+
+# image loss weight at 1e-4
+python inspect_model_riab_image2hidden.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 50 --image_loss_weight 1e-4 > /home/marco/logs/7.txt 2>&1;
+python inspect_model_riab_imagepred.py --behaviour cluster3 --env box_messy_grass --n_exp 15 --epochs 50 --image_loss_weight 1e-4 > /home/marco/logs/8.txt 2>&1;

@@ -112,7 +112,9 @@ class Trainer(object):
                     print('Epoch: {}/{}. Batch {}/{}. Loss: {}. Err: {}cm'.format(
                         epoch_idx, n_epochs, step_idx, dl_len,
                         np.round(loss, 2), np.round(100 * err, 2)))
-            if (epoch_idx%10==0) and save:
+            print(flush=True)
+            if (epoch_idx%15==0) and save:
+            # if save:
                 print('Saving rate maps snapshot')
                 save_ratemaps_mine(
                     self.model, self.trajectory_generator,

@@ -30,7 +30,7 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"]="expandable_segments:True"
 from utils import generate_run_ID
 from place_cells import PlaceCells
 from trajectory_generator import TrajectoryGenerator
-from model_image2hidden import RNN
+from model_imagepred import RNN
 from trainer import Trainer
 import argparse
 import cv2
@@ -105,7 +105,7 @@ def main(args):
     # additional options which were not given, but necessary
     options.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    options.run_ID = generate_run_ID(options, is_riab=True, prefix='image2hidden')
+    options.run_ID = generate_run_ID(options, is_riab=True, prefix='imagepred')
 
     print("original total number of datapoints")
     print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
