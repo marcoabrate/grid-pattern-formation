@@ -86,7 +86,7 @@ class PlaceCells(object):
 
         # NOT 0-1 NORMALIZED BY DEFAULT
         self.rate_maps = np.load(
-            os.path.join(options.hidden_units_dir, 'place', 'rate_maps.npy')
+            os.path.join(options.hidden_units_dir, 'place', 'rate_maps_nonsmooth.npy')
         )
 
         n = self.rate_maps.shape[-1]
@@ -109,10 +109,10 @@ class PlaceCells(object):
         ).to(self.device)
 
         rm_half1 = np.load(
-            os.path.join(options.hidden_units_dir, 'place', 'rm_half1.npy')
+            os.path.join(options.hidden_units_dir, 'place', 'rm_nonsmooth_half1.npy')
         )
         rm_half2 = np.load(
-            os.path.join(options.hidden_units_dir, 'place', 'rm_half2.npy')
+            os.path.join(options.hidden_units_dir, 'place', 'rm_nonsmooth_half2.npy')
         )
         _, rm_fields = rate_maps_field_detection(self.rate_maps, rm_half1, rm_half2)
         fields_centres = []

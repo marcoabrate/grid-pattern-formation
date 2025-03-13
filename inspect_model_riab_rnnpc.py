@@ -86,10 +86,10 @@ def main(args):
     # additional options which were not given, but necessary
     options.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    options.run_ID = generate_run_ID(options, is_riab=True, prefix='rnnpc')
+    options.run_ID = generate_run_ID(options, is_riab=True, prefix='rnnpc_nonsmooth')
 
     print("original total number of datapoints")
-    print(f"{100_000 * 200 * options.sequence_length * 1_000:,f}") # where 1_000 is the number of epochs
+    print(f"{100_000 * 200 * options.sequence_length * 1_000:,.0f}") # where 1_000 is the number of epochs
 
     # If you've trained with these params before, will restore trained model
     place_cells = PlaceCells(options)
@@ -234,7 +234,7 @@ def main(args):
     print()
 
     print("current total number of datapoints (w/ similar results)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,f}") # where 100 is the number of epochs
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length * args.epochs:,.0f}") # where 100 is the number of epochs
     print()
     for i, batch in enumerate(dataloader_train):
         if i == 0:
@@ -249,7 +249,7 @@ def main(args):
             break
         
     print("total number of datapoints (w/ rat in a box)")
-    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,f}")
+    print(f"{len(dataloader_train) * options.batch_size * options.sequence_length:,.0f}")
     print()
 
     dataloader_test = torch.utils.data.DataLoader(
