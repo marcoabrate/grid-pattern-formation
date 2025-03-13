@@ -425,6 +425,14 @@ def main(args):
     np.save(os.path.join(trainer.ckpt_dir, 'max_60_mask.npy'), max_60_mask)
     np.save(os.path.join(trainer.ckpt_dir, 'max_90_mask.npy'), max_90_mask)
     np.save(os.path.join(trainer.ckpt_dir, 'max_60_ind.npy'), max_60_ind)
+    
+    plt.figure(figsize=(7,7))
+    plt.boxplot([score_60, score_90], notch=True)
+    plt.xticks([1, 2], ['score 60', 'score 90'])
+        
+    plt.suptitle('Gridness Score Histogram', fontsize=16)
+    plt.savefig(os.path.join(trainer.ckpt_dir, 'gridscore_hist.png'))
+    plt.close()
 
 
 if __name__ == '__main__':
