@@ -2,7 +2,7 @@
 import torch
 import numpy as np
 
-from visualize import save_ratemaps
+from visualize import save_ratemaps, save_ratemaps_mine
 import os
 
 
@@ -114,18 +114,14 @@ class Trainer(object):
                     print('Epoch: {}/{}. Batch {}/{}. Loss: {}. Err: {}cm'.format(
                         epoch_idx, n_epochs, step_idx, dl_len,
                         np.round(loss, 2), np.round(100 * err, 2)))
-                # if ((step_idx+1)%step_to_save==0) and save:
-                #     # Save a picture of rate maps
-                #     save_ratemaps(self.model, self.trajectory_generator,
-                #                 self.options, step=dl_len*(epoch_idx-1)+step_idx+1)
-            if (epoch_idx%25==0) and save:
-                # Save a picture of rate maps
-                save_ratemaps(
-                    self.model, self.trajectory_generator,
-                    self.options, step=dl_len*(epoch_idx-1)+step_idx+1,
-                    dl_test=dl_test
-                )
-            if (epoch_idx%50==0) and save:
+                if ((step_idx+1)%step_to_save==0) and save:
+                    # Save a picture of rate maps
+                    save_ratemaps_mine(
+                        self.model, self.trajectory_generator,
+                        self.options, step=dl_len*(epoch_idx-1)+step_idx+1,
+                        dl_test=dl_test
+                    )
+            if save:
                 # Save checkpoint
                 ckpt_path = os.path.join(self.ckpt_dir, 'epoch_{}.pth'.format(epoch_idx))
                 torch.save(self.model.state_dict(), ckpt_path)

@@ -116,7 +116,8 @@ class TrajectoryGenerator(object):
             v = torch.tensor(v, dtype=torch.float32).transpose(0, 1)
 
             pos = np.stack([traj['target_x'], traj['target_y']], axis=-1)
-            pos = torch.tensor(pos, dtype=torch.float32).transpose(0, 1)
+            pos = pos.transpose(0, 1).contiguous()
+            pos = torch.tensor(pos, dtype=torch.float32)
             # Put on GPU if GPU is available
             pos = pos.to(self.options.device)
             place_outputs = self.place_cells.get_activation(pos)
@@ -139,7 +140,7 @@ class TrajectoryGenerator(object):
         vel = vel.transpose(0, 1)
         vel = vel.to(self.options.device)
 
-        pos = pos.transpose(0, 1)
+        pos = pos.transpose(0, 1).contiguous()
         pos = pos.to(self.options.device)
         place_outputs = self.place_cells.get_activation(pos)
 
@@ -197,7 +198,7 @@ class TrajectoryGenerator(object):
         v = v.transpose(0, 1)
         v = v.to(self.options.device)
 
-        pos = pos.transpose(0, 1)
+        pos = pos.transpose(0, 1).contiguous()
         pos = pos.to(self.options.device)
         place_outputs = self.place_cells.get_activation(pos)
 
@@ -218,7 +219,7 @@ class TrajectoryGenerator(object):
         v = v.transpose(0, 1)
         v = v.to(self.options.device)
 
-        pos = pos.transpose(0, 1)
+        pos = pos.transpose(0, 1).contiguous()
         pos = pos.to(self.options.device)
         place_outputs = self.place_cells.get_activation(pos)
 
