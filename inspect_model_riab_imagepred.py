@@ -15,6 +15,7 @@ sys.path.append(BASE_DIR)
 
 import numpy as np
 import torch
+import re
 
 from matplotlib import pyplot as plt
 
@@ -114,9 +115,17 @@ def main(args):
     # If you've trained with these params before, will restore trained model
     place_cells = PlaceCells(options)
     model = RNN(options, place_cells).cuda()
+
+    if args.load_model is not None:
+        print('loading previous model')
+        ckpt_path = os.path.join('experiments', args.load_model)
+        model_files = [f for f in os.listdir(ckpt_path) if re.match(r"epoch_\d+\.pth", f)]
+        epoch = max([int(re.search(r'\d+', f).group()) for f in model_files])
+        model.load_state_dict(torch.load(os.path.join(ckpt_path, f'epoch_{epoch}.pth')))
+        start_epoch = epoch
+
     trajectory_generator = TrajectoryGenerator(options, place_cells)
     trainer = Trainer(options, model, trajectory_generator)
-
 
     # # My Data
 
@@ -287,7 +296,13 @@ def main(args):
     plt.savefig(os.path.join(trainer.ckpt_dir, 'place_cells.png'))
     plt.close()
 
-    trainer.train_mine(n_epochs=args.epochs, dl_train=dataloader_train, dl_test=dataloader_test, save=True)
+    trainer.train_mine(
+        n_epochs=args.epochs,
+        dl_train=dataloader_train,
+        dl_test=dataloader_test,
+        start_epoch=1 if args.load_model is None else start_epoch+1,
+        save=True
+    )
 
     print('done training')
     torch.cuda.empty_cache()
@@ -432,6 +447,8 @@ if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--behaviour', type=str, default='cluster3', help="Behaviour from which to load data")
     argparser.add_argument('--env', type=str, default='box_messy_grass') #required=True, help="Environment from which to load data. 'box_messy' or 'box_messy_grass'")
+    
+    argparser.add_argument('--load_model', type=str, default=None)
 
     argparser.add_argument('--n_exp', type=int, default=15, help="Number of experiments to load") # was 100_000
     argparser.add_argument('--epochs', type=int, default=100, help="Number of epochs") # was 100_000

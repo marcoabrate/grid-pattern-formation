@@ -87,7 +87,7 @@ class Trainer(object):
                 torch.save(self.model.state_dict(), ckpt_path)
 
 
-    def train_mine(self, n_epochs, dl_train, dl_test, save=True):
+    def train_mine(self, n_epochs, dl_train, dl_test, start_epoch=1, save=True):
         ''' 
         Train model on simulated trajectories.
 
@@ -99,7 +99,7 @@ class Trainer(object):
         dl_len = len(dl_train)
 
         # tbar = tqdm(range(n_steps), leave=False)
-        for epoch_idx in range(1, n_epochs+1):
+        for epoch_idx in range(start_epoch, start_epoch+n_epochs):
             for step_idx, batch in enumerate(dl_train):
                 image, vel, pos, init_pos = batch
                 (inputs, pos, pc_outputs) = self.trajectory_generator.next_mine(image, vel, pos, init_pos)
